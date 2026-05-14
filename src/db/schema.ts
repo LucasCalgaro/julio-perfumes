@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { boolean, integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -21,6 +20,7 @@ export const productsTable = pgTable("products", {
   imageUrl: varchar({ length: 255 }),
   stock: integer().notNull().default(0),
   isPublished: boolean().notNull().default(true),
+  fragranticaUrl: varchar({ length: 255 }),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp({ mode: 'date', precision: 3 }).$onUpdate(() => new Date()),
 });
