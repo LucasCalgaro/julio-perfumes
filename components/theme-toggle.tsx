@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ export default function ThemeToggle() {
     }
     return false;
   });
-
 
   useEffect(() => {
     if (dark) {

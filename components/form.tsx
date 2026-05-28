@@ -3,22 +3,22 @@ import { revalidatePath } from "next/cache";
 
 export async function Form() {
   async function uploadImage(formData: FormData) {
-    'use server';
-    const imageFile = formData.get('image') as File;
+    "use server";
+    const imageFile = formData.get("image") as File;
     const blob = await put(imageFile.name, imageFile, {
-      access: 'public',
+      access: "public",
       addRandomSuffix: true,
     });
-    revalidatePath('/');
+    revalidatePath("/");
     return blob;
   }
-  
+
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const result = await uploadImage(formData);
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <label htmlFor="image">Image</label>

@@ -1,22 +1,40 @@
+"use client";
 import FilterBar from "@/components/catalog/filter-bar";
 import ProductGrid from "@/components/catalog/product-grid";
-import { brand1, brand2, brand3, category1, category2, category3, product1, product2, product3 } from "@/lib/mock-data";
+import { Column } from "@/components/layout/column";
+import { GetProductRequest, getProducts } from "@/server-functions/products";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 
-export default function Home () {
+export default function Home() {
+  const [filter, setFilter] = useState<GetProductRequest>({
+    brand: undefined,
+    category: undefined,
+    gender: "",
+  });
+
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["products", filter],
+    queryFn: () => getProducts(filter),
+  });
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-5 w-full">
       <div className="mb-6">
-        <h1 className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight">
-          Catálogo
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          12 {"perfumes"} disponíveis
-        </p>
+        <FilterBar
+          filter={filter}
+          setFilter={setFilter}
+          total={products?.length ?? 0}
+        />
       </div>
-      <div className="mb-6">
-        <FilterBar/>
-      </div>
-      <ProductGrid brands={[ brand1, brand2, brand3]} categories={[ category1, category2, category3 ]} products={[ product1, product2, product3, product1, product2, product3, product1, product2, product3 ]} />
+      {isLoading ? (
+        <Column className="w-full items-center justify-center gap-1">
+          <Loader2 className="animate-spin w-10 h-10" /> Carregando
+        </Column>
+      ) : (
+        <ProductGrid products={products ?? []} />
+      )}
     </main>
   );
 }

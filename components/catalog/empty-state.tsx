@@ -1,4 +1,3 @@
-import React from "react";
 import { SearchX } from "lucide-react";
 
 export default function EmptyState({ message }: { message?: string }) {
@@ -7,7 +6,9 @@ export default function EmptyState({ message }: { message?: string }) {
       <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
         <SearchX className="h-7 w-7 text-muted-foreground" />
       </div>
-      <p className="text-muted-foreground text-sm">{message || "Nenhum produto encontrado."}</p>
+      <p className="text-muted-foreground text-sm">
+        {message || "Nenhum produto encontrado."}
+      </p>
     </div>
   );
 }
