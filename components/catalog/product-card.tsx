@@ -1,13 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/formatters";
 import { GetProductsResponse } from "@/server-functions/products";
 import Link from "next/link";
-
-function formatPrice(cents: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(cents / 100);
-}
 
 interface GenderLabel {
   [key: string]: string;

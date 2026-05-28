@@ -26,6 +26,7 @@ export const productsTable = pgTable("products", {
     .notNull()
     .references(() => brandsTable.id),
   description: varchar({ length: 255 }),
+  promoPriceInCents: integer(),
   priceInCents: integer().notNull().default(0),
   imageUrl: varchar({ length: 255 }),
   stock: integer().notNull().default(0),

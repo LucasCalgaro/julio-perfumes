@@ -2,7 +2,7 @@
 
 import db from "@/db";
 import { brandsTable, categoriesTable, productsTable } from "@/db/schema";
-import { and, eq, getTableColumns } from "drizzle-orm";
+import { and, eq, getTableColumns, gt } from "drizzle-orm";
 
 export type GetProductRequest = {
   brand?: number;
@@ -53,8 +53,42 @@ export async function getProducts(
         genderFilter,
         brandFilter,
         categoryFilter,
+        gt(productsTable.stock, 0),
         eq(productsTable.isPublished, true),
       ),
     );
   return products;
 }
+
+export type GetProductResponse =
+  | (typeof productsTable.$inferSelect & {
+      brand: string;
+      brandUrl: string | null;
+      category: string;
+    })
+  | null;
+
+export const getProductBySlug = async (
+  slug: string,
+): Promise<GetProductResponse> => {
+  const product = await db
+    .select({
+      ...getTableColumns(productsTable),
+      brand: brandsTable.name,
+      brandUrl: brandsTable.imageUrl,
+      category: categoriesTable.name,
+    })
+    .from(productsTable)
+    .innerJoin(brandsTable, eq(brandsTable.id, productsTable.brandId))
+    .innerJoin(
+      categoriesTable,
+      eq(categoriesTable.id, productsTable.categoryId),
+    )
+    .where(eq(productsTable.slug, slug))
+    .limit(1);
+
+  if (!product) {
+    return null;
+  }
+  return product[0];
+};
