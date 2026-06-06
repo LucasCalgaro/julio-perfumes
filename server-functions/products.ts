@@ -92,3 +92,90 @@ export const getProductBySlug = async (
   }
   return product[0];
 };
+
+export type GetAdminProductRequest = {
+  brand?: number;
+  category?: number;
+  gender: string;
+};
+
+export type GetAdminProductsResponse = typeof productsTable.$inferSelect & {
+  id: number;
+  brand: string;
+  category: string;
+};
+
+export async function getAdminProducts(
+  filter?: GetAdminProductRequest,
+): Promise<GetAdminProductsResponse[]> {
+  let genderFilter;
+
+  if (filter?.gender) {
+    genderFilter = eq(productsTable.gender, filter.gender);
+  }
+
+  let brandFilter;
+
+  if (filter?.brand) {
+    brandFilter = eq(productsTable.brandId, Number(filter.brand));
+  }
+
+  let categoryFilter;
+
+  if (filter?.category) {
+    categoryFilter = eq(productsTable.categoryId, Number(filter.category));
+  }
+
+  const products = await db
+    .select({
+      ...getTableColumns(productsTable),
+      brand: brandsTable.name,
+      category: categoriesTable.name,
+    })
+    .from(productsTable)
+    .innerJoin(brandsTable, eq(brandsTable.id, productsTable.brandId))
+    .innerJoin(
+      categoriesTable,
+      eq(categoriesTable.id, productsTable.categoryId),
+    )
+    .where(and(genderFilter, brandFilter, categoryFilter));
+  return products;
+}
+
+export type UpsertProductRequest = typeof productsTable.$inferInsert;
+
+export async function upsertProduct({
+  product,
+  id,
+}: {
+  product: UpsertProductRequest;
+  id?: number;
+}) {
+  if (id) {
+    const { slug, ...rest } = product;
+    const updatedProduct = await db
+      .update(productsTable)
+      .set(rest)
+      .where(eq(productsTable.id, id))
+      .returning();
+    return updatedProduct;
+  }
+
+  const existingProduct = await db
+    .select()
+    .from(productsTable)
+    .where(eq(productsTable.slug, product.slug))
+    .limit(1);
+
+  if (existingProduct) {
+    const lastId = existingProduct[0].id;
+    product.slug = `${product.slug}-${lastId + 1}`;
+  }
+
+  const createdProduct = await db
+    .insert(productsTable)
+    .values(product)
+    .returning();
+
+  return createdProduct;
+}

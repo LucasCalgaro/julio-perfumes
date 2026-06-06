@@ -13,7 +13,6 @@ type Props = {
   params: { slug: string };
 };
 
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
@@ -49,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ProductDetail( { params }: Props) {
+export default async function ProductDetail({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
 
@@ -127,7 +126,7 @@ export default async function ProductDetail( { params }: Props) {
                 </Column>
               )}
             </Row>
-            
+
             <Column className="mt-8 sm:justify-end sm:flex-row">
               {product.fragranticaUrl && (
                 <Button

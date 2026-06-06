@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Column } from "./layout/column";
-import ThemeToggle from "./theme-toggle";
+import { ModeToggle } from "./theme-toggle";
+import { Button } from "./ui/button";
 
-const Navbar = () => {
+const Navbar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   return (
     <Column className="w-full">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -13,7 +14,12 @@ const Navbar = () => {
             </span>
           </Link>
           <div className="flex items-center gap-1">
-            <ThemeToggle />
+            {isAdmin && (
+              <Button variant="link" asChild>
+                <Link href="/">Voltar ao Catálogo</Link>
+              </Button>
+            )}
+            <ModeToggle />
           </div>
         </div>
       </header>

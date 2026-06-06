@@ -1,4 +1,3 @@
-import Navbar from "@/components/navbar";
 import Providers from "@/components/providers";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -44,12 +43,10 @@ export default function RootLayout({
         inter.variable,
         playfairDisplayHeading.variable,
       )}
+      suppressHydrationWarning={true}
     >
       <body className="flex flex-col min-h-screen bg-background/80">
-        <Providers>
-          <Navbar />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
