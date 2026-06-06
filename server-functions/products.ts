@@ -2,7 +2,7 @@
 
 import db from "@/db";
 import { brandsTable, categoriesTable, productsTable } from "@/db/schema";
-import { and, eq, getTableColumns, gt } from "drizzle-orm";
+import { and, eq, getTableColumns, gt, like } from "drizzle-orm";
 
 export type GetProductRequest = {
   brand?: number;
@@ -94,6 +94,7 @@ export const getProductBySlug = async (
 };
 
 export type GetAdminProductRequest = {
+  name?: string;
   brand?: number;
   category?: number;
   gender: string;
@@ -101,6 +102,7 @@ export type GetAdminProductRequest = {
 
 export type GetAdminProductsResponse = typeof productsTable.$inferSelect & {
   id: number;
+
   brand: string;
   category: string;
 };
@@ -108,6 +110,12 @@ export type GetAdminProductsResponse = typeof productsTable.$inferSelect & {
 export async function getAdminProducts(
   filter?: GetAdminProductRequest,
 ): Promise<GetAdminProductsResponse[]> {
+  let nameFilter;
+
+  if (filter?.name) {
+    nameFilter = like(productsTable.name, '%'+filter.name+'%');
+  }
+
   let genderFilter;
 
   if (filter?.gender) {
@@ -138,7 +146,7 @@ export async function getAdminProducts(
       categoriesTable,
       eq(categoriesTable.id, productsTable.categoryId),
     )
-    .where(and(genderFilter, brandFilter, categoryFilter));
+    .where(and(genderFilter, brandFilter, categoryFilter, nameFilter));
   return products;
 }
 

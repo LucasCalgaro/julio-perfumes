@@ -30,6 +30,7 @@ import { Label } from "../ui/label";
 import { SelectContent } from "../ui/select";
 import BrandForm from "./create-brand-form";
 import CurrencyInput from "react-currency-input-field";
+import { Switch } from "../ui/switch";
 
 interface GenderLabel {
   [key: string]: string;
@@ -157,7 +158,12 @@ export default function ProductAdminCard({
                 </svg>
               </div>
             )}
-            <Badge className="absolute top-2 left-2 text-[10px] font-medium bg-background/80 text-foreground backdrop-blur-sm py-1 px-4 rounded-full">
+            <Badge
+              className={`absolute top-2 left-2 text-[10px] font-bold  py-1 px-4 rounded-full ${product.isPublished ? "bg-green-700" : "bg-rose-500"}`}
+            >
+              {product.isPublished ? "Publicado" : "Rascunho"}
+            </Badge>
+            <Badge className="absolute top-10 left-2 text-[10px] font-medium bg-background/80 text-foreground backdrop-blur-sm py-1 px-4 rounded-full">
               {genderLabel[product.gender] || product.gender}
             </Badge>
           </div>
@@ -308,6 +314,13 @@ export default function ProductAdminCard({
             </div>
           )}
           <Column className="md:flex-row">
+            <Row className="items-center justify-center md:w-48 w-full">
+              <Switch
+                checked={form.isPublished}
+                onCheckedChange={(v) => setForm({ ...form, isPublished: v })}
+              />
+              <span className="font-bold">Produto Publicado</span>
+            </Row>
             <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
               <DialogTrigger asChild>
                 <Button variant="destructive" className="flex-1 py-3">
