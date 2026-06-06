@@ -29,6 +29,7 @@ import {
 } from "../ui/select";
 import BrandForm from "./create-brand-form";
 import CurrencyInput from "react-currency-input-field";
+import { Column } from "../layout/column";
 
 const GENDERS = ["Masculino", "Feminino", "Unisex"];
 
@@ -43,6 +44,8 @@ function slugify(str: string) {
 
 const ProductCreateModal = () => {
   const queryClient = useQueryClient();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   const [form, setForm] = useState<UpsertProductRequest>({
     name: "",
     priceInCents: 0,
@@ -75,6 +78,7 @@ const ProductCreateModal = () => {
     mutationKey: ["upsertProduct"],
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      setIsFormOpen(false);
     },
   });
 
@@ -92,13 +96,13 @@ const ProductCreateModal = () => {
   ] as const;
 
   return (
-    <Dialog>
+    <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-3.5 w-3.5" /> Novo Produto
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-7xl">
+      <DialogContent className="md:min-w-7xl max-h-screen overflow-auto">
         <div>
           <DialogTitle className="text-2xl ml-0">Novo Produto</DialogTitle>
           <DialogDescription>
@@ -106,8 +110,8 @@ const ProductCreateModal = () => {
           </DialogDescription>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+          <Column className="md:flex-row">
+            <div className="space-y-1.5 flex-1">
               <Label>Nome *</Label>
               <Input
                 value={form.name}
@@ -121,7 +125,7 @@ const ProductCreateModal = () => {
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 md:w-32 w-full">
               <Label>Preço (R$) *</Label>
               <CurrencyInput
                 className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
@@ -139,7 +143,7 @@ const ProductCreateModal = () => {
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 md:w-48 w-full">
               <Label>Gênero *</Label>
               <Select
                 value={form.gender}
@@ -157,30 +161,8 @@ const ProductCreateModal = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>Marca *</Label>
-              <Row>
-                <Select
-                  value={form.brandId ? form.brandId.toString() : ""}
-                  onValueChange={(v) =>
-                    setForm({ ...form, brandId: Number(v) })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent popover="auto" position="popper">
-                    {brands?.map((b) => (
-                      <SelectItem key={b.id} value={b.id.toString()}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <BrandForm />
-              </Row>
-            </div>
-            <div className="space-y-1.5">
+
+            <div className="space-y-1.5 md:w-48 w-full">
               <Label>Categoria *</Label>
               <Select
                 value={form.categoryId ? form.categoryId.toString() : ""}
@@ -188,7 +170,7 @@ const ProductCreateModal = () => {
                   setForm({ ...form, categoryId: Number(v) })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecionar categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,24 +182,46 @@ const ProductCreateModal = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label>URL da Imagem</Label>
-              <Input
-                value={form?.imageUrl || ""}
-                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label>URL Fragrantica</Label>
-              <Input
-                value={form?.fragranticaUrl || ""}
-                onChange={(e) =>
-                  setForm({ ...form, fragranticaUrl: e.target.value })
-                }
-                placeholder="https://fragrantica.com.br/..."
-              />
-            </div>
+          </Column>
+
+          <div className="space-y-1.5 flex-1">
+            <Label>Marca *</Label>
+            <Row>
+              <Select
+                value={form.brandId ? form.brandId.toString() : ""}
+                onValueChange={(v) => setForm({ ...form, brandId: Number(v) })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar marca" />
+                </SelectTrigger>
+                <SelectContent popover="auto" position="popper">
+                  {brands?.map((b) => (
+                    <SelectItem key={b.id} value={b.id.toString()}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <BrandForm />
+            </Row>
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>URL da Imagem</Label>
+            <Input
+              value={form?.imageUrl || ""}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              placeholder="https://..."
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>URL Fragrantica</Label>
+            <Input
+              value={form?.fragranticaUrl || ""}
+              onChange={(e) =>
+                setForm({ ...form, fragranticaUrl: e.target.value })
+              }
+              placeholder="https://fragrantica.com.br/..."
+            />
           </div>
 
           {/* Image preview */}

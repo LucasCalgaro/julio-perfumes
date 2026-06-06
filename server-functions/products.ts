@@ -167,7 +167,7 @@ export async function upsertProduct({
     .where(eq(productsTable.slug, product.slug))
     .limit(1);
 
-  if (existingProduct) {
+  if (existingProduct && existingProduct.length > 0) {
     const lastId = existingProduct[0].id;
     product.slug = `${product.slug}-${lastId + 1}`;
   }
@@ -178,4 +178,12 @@ export async function upsertProduct({
     .returning();
 
   return createdProduct;
+}
+
+export async function deleteProduct(id: number) {
+  const deletedProduct = await db
+    .delete(productsTable)
+    .where(eq(productsTable.id, id))
+    .returning();
+  return deletedProduct;
 }

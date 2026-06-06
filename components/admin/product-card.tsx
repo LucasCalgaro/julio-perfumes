@@ -3,6 +3,7 @@ import { formatPrice, slugify } from "@/lib/formatters";
 import {
   GetAdminProductsResponse,
   UpsertProductRequest,
+  deleteProduct,
   upsertProduct,
 } from "@/server-functions/products";
 import {
@@ -10,6 +11,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
@@ -18,7 +20,7 @@ import { Select, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getBrands } from "@/server-functions/brands";
 import { getCategories } from "@/server-functions/categories";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Column } from "../layout/column";
 import { Row } from "../layout/row";
@@ -48,6 +50,7 @@ export default function ProductAdminCard({
 }) {
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [form, setForm] = useState<UpsertProductRequest>({
     name: "",
     priceInCents: 0,
@@ -111,6 +114,16 @@ export default function ProductAdminCard({
     },
   });
 
+  const { mutate: deleteP } = useMutation({
+    mutationFn: (id: number) => deleteProduct(id),
+    mutationKey: ["deleteProduct"],
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      setIsDeleteOpen(false);
+      setIsFormOpen(false);
+    },
+  });
+
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     mutate({ product: form, id: product.id });
@@ -164,7 +177,7 @@ export default function ProductAdminCard({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="md:min-w-7xl ">
+      <DialogContent className="md:min-w-7xl max-h-screen overflow-auto">
         <div>
           <DialogTitle>Editar Produto</DialogTitle>
           <DialogDescription>Campos obrigatórios com *</DialogDescription>
@@ -185,7 +198,7 @@ export default function ProductAdminCard({
                 required
               />
             </div>
-            <div className="space-y-1.5 flex-1">
+            <div className="space-y-1.5 md:w-32 w-full">
               <Label>Preço (R$) *</Label>
               <CurrencyInput
                 className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
@@ -221,8 +234,30 @@ export default function ProductAdminCard({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1.5 md:w-48 w-full">
+              <Label>Categoria *</Label>
+              <Select
+                value={form.categoryId ? form.categoryId.toString() : ""}
+                onValueChange={(v) =>
+                  setForm({ ...form, categoryId: Number(v) })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((c) => (
+                    <SelectItem key={c.id} value={c.id.toString()}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </Column>
-          <div className="space-y-1.5">
+
+          <div className="space-y-1.5 flex-1">
             <Label>Marca *</Label>
             <Row>
               <Select
@@ -230,7 +265,7 @@ export default function ProductAdminCard({
                 onValueChange={(v) => setForm({ ...form, brandId: Number(v) })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue placeholder="Selecionar marca" />
                 </SelectTrigger>
                 <SelectContent popover="auto" position="popper">
                   {brands?.map((b) => (
@@ -240,27 +275,8 @@ export default function ProductAdminCard({
                   ))}
                 </SelectContent>
               </Select>
-
               <BrandForm />
             </Row>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Categoria *</Label>
-            <Select
-              value={form.categoryId ? form.categoryId.toString() : ""}
-              onValueChange={(v) => setForm({ ...form, categoryId: Number(v) })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecionar categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map((c) => (
-                  <SelectItem key={c.id} value={c.id.toString()}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>URL da Imagem</Label>
@@ -291,17 +307,46 @@ export default function ProductAdminCard({
               />
             </div>
           )}
-          <Row>
+          <Column className="md:flex-row">
+            <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" className="flex-1 py-3">
+                  <Trash className="mr-2 h-4 w-4" /> Excluir Produto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="md:min-w-3xl ">
+                <DialogTitle className="text-center">
+                  Excluir Produto
+                </DialogTitle>
+                <DialogTitle className="">
+                  Tem certeza que deseja excluir esse produto?
+                </DialogTitle>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => deleteP(product?.id)}
+                  >
+                    Excluir
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <DialogClose asChild>
-              <Button className="flex-1" variant="outline">
+              <Button className="flex-1 py-3" variant="outline">
                 Cancelar
               </Button>
             </DialogClose>
-            <Button className="flex-1" type="submit" disabled={isPending}>
+            <Button className="flex-1 py-3" type="submit" disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {product ? "Salvar" : "Criar produto"}
             </Button>
-          </Row>
+          </Column>
         </form>
       </DialogContent>
     </Dialog>
