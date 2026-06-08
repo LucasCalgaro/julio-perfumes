@@ -68,7 +68,11 @@ export default function ProductCard({
           )}
 
           <p className="text-lg font-semibold text-foreground">
-            {formatPrice( !!product.promoPriceInCents && product.promoPriceInCents > 0 ? product.promoPriceInCents : product.priceInCents)}
+            {formatPrice(
+              !!product.promoPriceInCents && product.promoPriceInCents > 0
+                ? product.promoPriceInCents
+                : product.priceInCents,
+            )}
           </p>
         </Row>
       </div>

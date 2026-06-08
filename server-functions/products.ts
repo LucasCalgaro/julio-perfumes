@@ -194,6 +194,7 @@ export async function upsertProduct({
       .set(rest)
       .where(eq(productsTable.id, id))
       .returning();
+
     return updatedProduct;
   }
 
