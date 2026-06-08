@@ -65,8 +65,9 @@ export default function ProductAdminCard({
 
   useEffect(() => {
     if (product) {
+      const { id: _, ...rest } = product;
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setForm({ ...product });
+      setForm({ ...rest });
     }
   }, [product]);
 
@@ -162,9 +163,17 @@ export default function ProductAdminCard({
             <p className="text-[11px] text-muted-foreground">
               {product.category}
             </p>
-            <p className="text-sm font-semibold text-foreground">
-              {formatPrice(product.priceInCents)}
-            </p>
+            <Row className="items-center">
+              {!!product.promoPriceInCents && product.promoPriceInCents > 0 && (
+                <p className="text-sm font-semibold text-foreground line-through">
+                  {formatPrice(product.priceInCents)}
+                </p>
+              )}
+
+          <p className="text-lg font-semibold text-foreground">
+            {formatPrice( !!product.promoPriceInCents && product.promoPriceInCents > 0 ? product.promoPriceInCents : product.priceInCents)}
+          </p>
+            </Row>
           </div>
         </div>
       </DialogTrigger>
@@ -223,7 +232,7 @@ export default function ProductAdminCard({
               />
             </div>
             <div className="space-y-1.5 md:w-32 w-full">
-              <Label>Promoção (R$) *</Label>
+              <Label>Promoção (R$)</Label>
               <CurrencyInput
                 className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
                 prefix="R$ "
@@ -237,7 +246,6 @@ export default function ProductAdminCard({
                     promoPriceInCents: Number((values?.float || 0) * 100),
                   })
                 }
-                required
               />
             </div>
             <div className="space-y-1.5 md:w-48 w-full">

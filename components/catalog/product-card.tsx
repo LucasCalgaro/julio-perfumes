@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/formatters";
 import { GetProductsResponse } from "@/server-functions/products";
 import Link from "next/link";
+import { Row } from "../layout/row";
 
 interface GenderLabel {
   [key: string]: string;
@@ -59,9 +60,17 @@ export default function ProductCard({
           {product.name}
         </h3>
         <p className="text-[11px] text-muted-foreground">{product.category}</p>
-        <p className="text-sm font-semibold text-foreground">
-          {formatPrice(product.priceInCents)}
-        </p>
+        <Row className="items-center">
+          {!!product.promoPriceInCents && product.promoPriceInCents > 0 && (
+            <p className="text-sm font-semibold text-foreground line-through">
+              {formatPrice(product.priceInCents)}
+            </p>
+          )}
+
+          <p className="text-lg font-semibold text-foreground">
+            {formatPrice( !!product.promoPriceInCents && product.promoPriceInCents > 0 ? product.promoPriceInCents : product.priceInCents)}
+          </p>
+        </Row>
       </div>
     </Link>
   );

@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: `Compre ${product.name} da marca ${product.brand}.`,
     openGraph: {
       title: product.name,
-      description: `Confira ${product.name} na nossa loja!`,
+      description: `Confira ${product.name} por apenas R$ ${formatPrice(product.promoPriceInCents ?? product.priceInCents)} na nossa loja!`,
       images: product.imageUrl
         ? [
             {
