@@ -23,7 +23,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Julio Perfumes",
-  description: "",
+  description:
+    "Confira os perfumes com os melhores preços em Deodápolis e região, aqui na Júlio Perfumes!",
 };
 
 export default function RootLayout({

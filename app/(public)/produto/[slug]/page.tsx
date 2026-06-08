@@ -54,10 +54,13 @@ export default async function ProductDetail({ params }: Props) {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Produto não encontrado.</p>
+      <div className="bg-background flex flex-col items-center justify-center gap-8 flex-1">
+        <h1 className="font-heading text-9xl font-bold ">404</h1>
+        <p className="text-foreground text-2xl font-bold font-heading">
+          Produto não encontrado.
+        </p>
         <Link href="/">
-          <Button variant="outline">Voltar ao catálogo</Button>
+          <Button variant="outline">Voltar ao Catálogo</Button>
         </Link>
       </div>
     );

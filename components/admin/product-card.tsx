@@ -66,28 +66,11 @@ export default function ProductAdminCard({
   useEffect(() => {
     if (product) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setForm({
-        name: product.name,
-        description: product.description,
-        slug: product.slug,
-        gender: product.gender,
-        categoryId: product.categoryId,
-        brandId: product.brandId,
-        priceInCents: product.priceInCents,
-        promoPriceInCents: product.promoPriceInCents,
-        imageUrl: product.imageUrl,
-        fragranticaUrl: product.fragranticaUrl,
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-        isPublished: product.isPublished,
-      });
+      setForm({ ...product });
     }
   }, [product]);
 
-  const [
-    { data: brands, isLoading: isBrandsLoading },
-    { data: categories, isLoading: isCategoriesLoading },
-  ] = useQueries({
+  const [{ data: brands }, { data: categories }] = useQueries({
     queries: [
       {
         queryKey: ["brands"],
@@ -111,6 +94,7 @@ export default function ProductAdminCard({
     mutationKey: ["upsertProduct"],
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin_products"] });
       setIsFormOpen(false);
     },
   });
@@ -120,6 +104,7 @@ export default function ProductAdminCard({
     mutationKey: ["deleteProduct"],
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin_products"] });
       setIsDeleteOpen(false);
       setIsFormOpen(false);
     },
@@ -159,7 +144,7 @@ export default function ProductAdminCard({
               </div>
             )}
             <Badge
-              className={`absolute top-2 left-2 text-[10px] font-bold  py-1 px-4 rounded-full ${product.isPublished ? "bg-green-700" : "bg-rose-500"}`}
+              className={`absolute top-2 left-2 text-[10px] font-bold  py-1 px-4 rounded-full text-white ${product.isPublished ? "bg-green-700" : "bg-rose-500"}`}
             >
               {product.isPublished ? "Publicado" : "Rascunho"}
             </Badge>
@@ -205,6 +190,21 @@ export default function ProductAdminCard({
               />
             </div>
             <div className="space-y-1.5 md:w-32 w-full">
+              <Label>Estoque*</Label>
+              <Input
+                type="number"
+                min={0}
+                value={form.stock}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    stock: Number(e.target.value),
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:w-32 w-full">
               <Label>Preço (R$) *</Label>
               <CurrencyInput
                 className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
@@ -217,6 +217,24 @@ export default function ProductAdminCard({
                   setForm({
                     ...form,
                     priceInCents: Number((values?.float || 0) * 100),
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:w-32 w-full">
+              <Label>Promoção (R$) *</Label>
+              <CurrencyInput
+                className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
+                prefix="R$ "
+                defaultValue={(form?.promoPriceInCents || 0) / 100}
+                decimalScale={2}
+                decimalSeparator=","
+                decimalsLimit={2}
+                onValueChange={(_, __, values) =>
+                  setForm({
+                    ...form,
+                    promoPriceInCents: Number((values?.float || 0) * 100),
                   })
                 }
                 required

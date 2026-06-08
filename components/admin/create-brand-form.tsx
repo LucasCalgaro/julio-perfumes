@@ -51,8 +51,9 @@ const BrandForm = ({ isExtended = false }: { isExtended?: boolean }) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {isExtended ? (
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Nova Marca
+          <Button className="md:w-auto w-10">
+            <Plus className="h-4 w-4" />{" "}
+            <span className="hidden md:inline">Nova Marca</span>
           </Button>
         ) : (
           <Button variant="outline" size="icon">

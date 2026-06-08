@@ -5,6 +5,7 @@ import { brandsTable, categoriesTable, productsTable } from "@/db/schema";
 import { and, eq, getTableColumns, gt, like } from "drizzle-orm";
 
 export type GetProductRequest = {
+  name?: string;
   brand?: number;
   category?: number;
   gender: string;
@@ -18,6 +19,12 @@ export type GetProductsResponse = typeof productsTable.$inferSelect & {
 export async function getProducts(
   filter?: GetProductRequest,
 ): Promise<GetProductsResponse[]> {
+  let nameFilter;
+
+  if (filter?.name) {
+    nameFilter = like(productsTable.name, `%${filter.name}%`);
+  }
+
   let genderFilter;
 
   if (filter?.gender) {
@@ -53,6 +60,7 @@ export async function getProducts(
         genderFilter,
         brandFilter,
         categoryFilter,
+        nameFilter,
         gt(productsTable.stock, 0),
         eq(productsTable.isPublished, true),
       ),
@@ -84,7 +92,13 @@ export const getProductBySlug = async (
       categoriesTable,
       eq(categoriesTable.id, productsTable.categoryId),
     )
-    .where(eq(productsTable.slug, slug))
+    .where(
+      and(
+        eq(productsTable.slug, slug),
+        eq(productsTable.isPublished, true),
+        gt(productsTable.stock, 0),
+      ),
+    )
     .limit(1);
 
   if (!product) {
@@ -94,6 +108,7 @@ export const getProductBySlug = async (
 };
 
 export type GetAdminProductRequest = {
+  published?: boolean;
   name?: string;
   brand?: number;
   category?: number;
@@ -113,7 +128,7 @@ export async function getAdminProducts(
   let nameFilter;
 
   if (filter?.name) {
-    nameFilter = like(productsTable.name, '%'+filter.name+'%');
+    nameFilter = like(productsTable.name, "%" + filter.name + "%");
   }
 
   let genderFilter;
@@ -134,6 +149,11 @@ export async function getAdminProducts(
     categoryFilter = eq(productsTable.categoryId, Number(filter.category));
   }
 
+  let publishedFilter;
+  if (filter?.published !== undefined) {
+    publishedFilter = eq(productsTable.isPublished, filter.published);
+  }
+
   const products = await db
     .select({
       ...getTableColumns(productsTable),
@@ -146,7 +166,15 @@ export async function getAdminProducts(
       categoriesTable,
       eq(categoriesTable.id, productsTable.categoryId),
     )
-    .where(and(genderFilter, brandFilter, categoryFilter, nameFilter));
+    .where(
+      and(
+        genderFilter,
+        brandFilter,
+        categoryFilter,
+        nameFilter,
+        publishedFilter,
+      ),
+    );
   return products;
 }
 

@@ -1,14 +1,14 @@
 "use client";
 import { getBrands } from "@/server-functions/brands";
 import { getCategories } from "@/server-functions/categories";
-import {
-  GetAdminProductRequest,
-  GetProductRequest,
-} from "@/server-functions/products";
+import { GetAdminProductRequest } from "@/server-functions/products";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Funnel, Search } from "lucide-react";
+import { Column } from "../layout/column";
+import { Row } from "../layout/row";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Select,
   SelectContent,
@@ -18,15 +18,12 @@ import {
 } from "../ui/select";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
-import { Input } from "../ui/input";
-import { Row } from "../layout/row";
 
 interface FilterBarProps {
   filter: GetAdminProductRequest;
@@ -49,7 +46,13 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
   ).length;
 
   const clearAll = () => {
-    setFilter({ gender: "", category: undefined, brand: undefined });
+    setFilter({
+      gender: "",
+      category: undefined,
+      brand: undefined,
+      published: undefined,
+      name: "",
+    });
   };
 
   return (
@@ -65,11 +68,14 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
       </Row>
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="rounded-full text-xs" variant="secondary">
-            <SlidersHorizontal className="h-4 w-4" />
-            Filtros
+          <Button
+            className="rounded-full text-xs md:w-auto w-10 md:p-4 p-0 relative"
+            variant="secondary"
+          >
+            <Funnel className="size-5" />
+            <span className="md:inline hidden">Filtros</span>
             {activeCount > 0 && (
-              <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px] bg-primary text-primary-foreground rounded-full">
+              <Badge className="absolute -left-1.5 -bottom-1.5 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
                 {activeCount}
               </Badge>
             )}
@@ -77,7 +83,7 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="rounded-t-2xl max-h-[80vh] min-h-[40vh] p-10"
+          className="rounded-t-2xl max-h-[80vh] min-h-[40vh] p-10 max-w-screen"
         >
           <SheetHeader className="p-0">
             <SheetTitle className="font-heading text-lg">
@@ -87,7 +93,7 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
           <div className="space-y-5 mt-5 pb-6">
             <ToggleGroup
               type="single"
-              className="gap-4"
+              className="gap-2"
               value={filter.gender}
               onValueChange={(value) => setFilter({ ...filter, gender: value })}
             >
@@ -101,7 +107,7 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
                 Unisex
               </ToggleGroupItem>
             </ToggleGroup>
-            <div className="flex items-center gap-5">
+            <Column className="md:flex-row md:items-center gap-5">
               <div className="flex-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                   Categoria
@@ -154,15 +160,45 @@ const AdminFilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" className="flex-1" onClick={clearAll}>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                  Status
+                </p>
+                <Select
+                  value={
+                    filter.published === undefined
+                      ? "all"
+                      : filter.published
+                        ? "active"
+                        : "disabled"
+                  }
+                  onValueChange={(v) =>
+                    setFilter({
+                      ...filter,
+                      published: v === "all" ? undefined : v === "active",
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todos os produtos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os produtos</SelectItem>
+                    <SelectItem value="active">Publicados</SelectItem>
+                    <SelectItem value="disabled">Rascunhos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </Column>
+            <Column className="md:flex-row gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 py-3"
+                onClick={clearAll}
+              >
                 Limpar tudo
               </Button>
-              <SheetClose asChild>
-                <Button className="flex-1">Ver resultados ({total})</Button>
-              </SheetClose>
-            </div>
+            </Column>
           </div>
         </SheetContent>
       </Sheet>

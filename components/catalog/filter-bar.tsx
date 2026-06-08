@@ -3,7 +3,7 @@ import { getBrands } from "@/server-functions/brands";
 import { getCategories } from "@/server-functions/categories";
 import { GetProductRequest } from "@/server-functions/products";
 import { useQuery } from "@tanstack/react-query";
-import { SlidersHorizontal } from "lucide-react";
+import { Funnel, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -22,6 +22,10 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { Column } from "../layout/column";
+import { Row } from "../layout/row";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface FilterBarProps {
   filter: GetProductRequest;
@@ -48,30 +52,27 @@ const FilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
   };
 
   return (
-    <div className="flex gap-2">
-      <ToggleGroup
-        type="single"
-        className="gap-2"
-        value={filter.gender}
-        onValueChange={(value) => setFilter({ ...filter, gender: value })}
-      >
-        <ToggleGroupItem value="Masculino" size="sm">
-          Masculino
-        </ToggleGroupItem>
-        <ToggleGroupItem value="Feminino" size="sm">
-          Feminino
-        </ToggleGroupItem>
-        <ToggleGroupItem value="Unisex" size="sm">
-          Unisex
-        </ToggleGroupItem>
-      </ToggleGroup>
+    <Row className="gap-2">
+      <Label className="gap-2 flex-1 items-center border border-transparent border-b-input">
+        <Search className="size-5" />
+        <Input
+          value={filter.name}
+          onChange={(e) => setFilter({ ...filter, name: e.target.value })}
+          placeholder="Buscar"
+          className="w-full border-none"
+        />
+      </Label>
+
       <Sheet>
         <SheetTrigger asChild>
-          <Button className="rounded-full text-xs" variant="secondary">
-            <SlidersHorizontal className="h-4 w-4" />
-            Filtros
+          <Button
+            className="rounded-full text-xs md:w-auto w-10 md:p-4 p-0 relative"
+            variant="secondary"
+          >
+            <Funnel className="size-5" />
+            <span className="md:inline hidden">Filtros</span>
             {activeCount > 0 && (
-              <Badge className="h-4 w-4 p-0 flex items-center justify-center text-[9px] bg-primary text-primary-foreground rounded-full">
+              <Badge className="absolute -left-1.5 -bottom-1.5 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
                 {activeCount}
               </Badge>
             )}
@@ -103,7 +104,7 @@ const FilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
                 Unisex
               </ToggleGroupItem>
             </ToggleGroup>
-            <div className="flex items-center gap-5">
+            <Column className="md:flex-row md:items-center gap-5">
               <div className="flex-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
                   Categoria
@@ -156,19 +157,25 @@ const FilterBar = ({ filter, setFilter, total }: FilterBarProps) => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" className="flex-1" onClick={clearAll}>
+            </Column>
+            <Column className="md:flex-row gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 py-3"
+                onClick={clearAll}
+              >
                 Limpar tudo
               </Button>
               <SheetClose asChild>
-                <Button className="flex-1">Ver resultados ({total})</Button>
+                <Button className="flex-1 py-3">
+                  Ver resultados ({total})
+                </Button>
               </SheetClose>
-            </div>
+            </Column>
           </div>
         </SheetContent>
       </Sheet>
-    </div>
+    </Row>
   );
 };
 

@@ -42,7 +42,7 @@ function slugify(str: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-const ProductCreateModal = () => {
+const ProductCreateModal = ({ extended = false }: { extended?: boolean }) => {
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -54,13 +54,11 @@ const ProductCreateModal = () => {
     imageUrl: "",
     categoryId: 0,
     brandId: 0,
+    stock: 1,
     fragranticaUrl: "",
   });
 
-  const [
-    { data: brands, isLoading: isBrandsLoading },
-    { data: categories, isLoading: isCategoriesLoading },
-  ] = useQueries({
+  const [{ data: brands }, { data: categories }] = useQueries({
     queries: [
       {
         queryKey: ["brands"],
@@ -78,6 +76,7 @@ const ProductCreateModal = () => {
     mutationKey: ["upsertProduct"],
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin_products"] });
       setIsFormOpen(false);
     },
   });
@@ -87,24 +86,17 @@ const ProductCreateModal = () => {
     mutate(form);
   };
 
-  const frameworks = [
-    "Next.js",
-    "SvelteKit",
-    "Nuxt.js",
-    "Remix",
-    "Astro",
-  ] as const;
-
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-3.5 w-3.5" /> Novo Produto
+        <Button className="md:w-auto w-10">
+          <Plus className="h-3.5 w-3.5" />{" "}
+          <span className="hidden md:inline">Novo Produto</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="md:min-w-7xl max-h-screen overflow-auto">
         <div>
-          <DialogTitle className="text-2xl ml-0">Novo Produto</DialogTitle>
+          <DialogTitle>Novo Produto</DialogTitle>
           <DialogDescription>
             Preencha os campos abaixo para criar um novo produto.
           </DialogDescription>
@@ -126,6 +118,21 @@ const ProductCreateModal = () => {
               />
             </div>
             <div className="space-y-1.5 md:w-32 w-full">
+              <Label>Estoque*</Label>
+              <Input
+                type="number"
+                min={0}
+                value={form.stock}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    stock: Number(e.target.value),
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:w-32 w-full">
               <Label>Preço (R$) *</Label>
               <CurrencyInput
                 className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
@@ -138,6 +145,24 @@ const ProductCreateModal = () => {
                   setForm({
                     ...form,
                     priceInCents: Number((values?.float || 0) * 100),
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-1.5 md:w-32 w-full">
+              <Label>Promoção (R$) *</Label>
+              <CurrencyInput
+                className="h-10 w-full min-w-0 border border-transparent border-b-input bg-transparent px-0 py-1 text-base transition-[color,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-b-ring disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-b-destructive md:text-sm dark:aria-invalid:border-b-destructive/50"
+                prefix="R$ "
+                defaultValue={(form?.promoPriceInCents || 0) / 100}
+                decimalScale={2}
+                decimalSeparator=","
+                decimalsLimit={2}
+                onValueChange={(_, __, values) =>
+                  setForm({
+                    ...form,
+                    promoPriceInCents: Number((values?.float || 0) * 100),
                   })
                 }
                 required

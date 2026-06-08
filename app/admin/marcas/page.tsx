@@ -15,8 +15,9 @@ const BrandPage = () => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-5 w-full space-y-4">
-      <Row className="justify-end">
-        <Button variant="outline" asChild>
+      <h1 className="font-heading text-2xl font-bold">Minhas Marcas</h1>
+      <Row className="justify-end flex-1">
+        <Button variant="outline" className="flex-1" asChild>
           <Link href="/admin">Gerir Produtos</Link>
         </Button>
         <BrandForm isExtended />
