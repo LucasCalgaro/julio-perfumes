@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { authClient } from "@/lib/auth-client";
 import { ChevronLeft, LogOut } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +9,9 @@ import { useRouter } from "next/navigation";
 
 const Navbar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const router = useRouter();
+
+  const user = authClient.useSession();
+
   return (
     <Column className="w-full">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -20,16 +23,19 @@ const Navbar = ({ isAdmin = false }: { isAdmin?: boolean }) => {
           </Link>
           <div className="flex items-center gap-1">
             {isAdmin && (
-              <>
-                <Button variant="link" asChild>
-                  <Link href="/">
-                    <ChevronLeft className="w-4 h-4" /> Catálogo
-                  </Link>
-                </Button>
-                <Button variant="link" onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => router.push("/login") } })}>
-                  <LogOut className="w-4 h-4" /> Sair
-                </Button>
-              </>
+              <Button variant="link" asChild>
+                <Link href="/">
+                  <ChevronLeft className="w-4 h-4" /> Catálogo
+                </Link>
+              </Button>
+            )}
+            {!isAdmin && user.data && (
+              <Button variant="link" asChild>
+                <Link href="/admin">
+                  <ChevronLeft className="w-4 h-4" />
+                  Painel Admin
+                </Link>
+              </Button>
             )}
             <ModeToggle />
           </div>

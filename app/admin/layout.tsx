@@ -8,7 +8,6 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -16,7 +15,7 @@ export default async function AdminLayout({
   if (!session) {
     redirect("/login");
   }
-  
+
   return (
     <>
       <Navbar isAdmin={true} />

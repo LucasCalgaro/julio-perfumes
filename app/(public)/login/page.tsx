@@ -63,40 +63,28 @@ export default function SignInPage() {
           )}
           <div className="space-y-4">
             <div>
-              <Label
-                htmlFor="email"
-              >
-                E-mail
-              </Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-               />
+              />
             </div>
             <div>
-              <Label
-                htmlFor="password"
-              >
-                Senha
-              </Label>
+              <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                 />
+              />
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-            >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>

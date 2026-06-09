@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   if (request.nextUrl.pathname.includes("/sign-up/email")) {
     return NextResponse.json(
       { message: "O registro de novas contas está desativado no momento." },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
