@@ -31,6 +31,8 @@ import BrandForm from "./create-brand-form";
 import CurrencyInput from "react-currency-input-field";
 import { Column } from "../layout/column";
 import PasteImageUploader from "../image-uploader";
+import ImageUploader from "../image-uploader";
+import { uploadImage } from "@/server-functions/upload";
 
 const GENDERS = ["Masculino", "Feminino", "Unisex"];
 
@@ -46,6 +48,7 @@ function slugify(str: string) {
 const ProductCreateModal = ({ extended = false }: { extended?: boolean }) => {
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const [form, setForm] = useState<UpsertProductRequest>({
     name: "",
@@ -78,13 +81,40 @@ const ProductCreateModal = ({ extended = false }: { extended?: boolean }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["admin_products"] });
+      setForm({
+        name: "",
+        priceInCents: 0,
+        slug: "",
+        gender: "Masculino",
+        imageUrl: "",
+        categoryId: 0,
+        brandId: 0,
+        stock: 1,
+        fragranticaUrl: "",
+      });
       setIsFormOpen(false);
     },
   });
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutate(form);
+    let finalUrl = form.imageUrl;
+
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await uploadImage({
+        formData,
+        folder: "produto",
+        customFilename: form.slug,
+      });
+      if (response.success && response.url) {
+        finalUrl = response.url;
+        setFile(null);
+      }
+    }
+    mutate({ ...form, imageUrl: finalUrl });
   };
 
   return (
@@ -232,10 +262,10 @@ const ProductCreateModal = ({ extended = false }: { extended?: boolean }) => {
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>URL da Imagem</Label>
-            <Input
-              value={form?.imageUrl || ""}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              placeholder="https://..."
+            <ImageUploader
+              setFile={setFile}
+              preview={form?.imageUrl || ""}
+              setPreview={(preview) => setForm({ ...form, imageUrl: preview })}
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
@@ -248,17 +278,6 @@ const ProductCreateModal = ({ extended = false }: { extended?: boolean }) => {
               placeholder="https://fragrantica.com.br/..."
             />
           </div>
-
-          {/* Image preview */}
-          {form?.imageUrl && (
-            <div className="w-24 h-24 rounded-lg overflow-hidden border border-border">
-              <img
-                src={form.imageUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
           <Row>
             <DialogClose asChild>
               <Button className="flex-1" variant="outline">

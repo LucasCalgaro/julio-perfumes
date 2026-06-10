@@ -21,10 +21,13 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Plus } from "lucide-react";
+import ImageUploader from "../image-uploader";
+import { uploadImage } from "@/server-functions/upload";
 
 const BrandForm = ({ isExtended = false }: { isExtended?: boolean }) => {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     name: "",
     imageUrl: "",
@@ -39,10 +42,25 @@ const BrandForm = ({ isExtended = false }: { isExtended?: boolean }) => {
     },
   });
 
-  const onSubmitLocal = () => {
+  const onSubmitLocal = async () => {
+    let finalUrl = form.imageUrl;
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await uploadImage({
+        formData,
+        folder: "marca",
+        customFilename: slugify(form.name),
+      });
+      if (response.success && response.url) {
+        finalUrl = response.url;
+        setFile(null);
+      }
+    }
     mutate({
       name: form.name,
-      imageUrl: form.imageUrl,
+      imageUrl: finalUrl,
       slug: slugify(form.name),
     });
   };
@@ -81,21 +99,11 @@ const BrandForm = ({ isExtended = false }: { isExtended?: boolean }) => {
           </div>
           <div className="w-full">
             <Label>Imagem da Marca</Label>
-            <Input
-              type="text"
-              placeholder="Digite o link da imagem"
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              value={form.imageUrl}
+            <ImageUploader
+              setFile={setFile}
+              preview={form?.imageUrl || ""}
+              setPreview={(preview) => setForm({ ...form, imageUrl: preview })}
             />
-            {form?.imageUrl && (
-              <div className="w-24 h-24 rounded-lg overflow-hidden border border-border mt-2">
-                <img
-                  src={form.imageUrl}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
           </div>
 
           <Row className="border-t py-4 mt-4">

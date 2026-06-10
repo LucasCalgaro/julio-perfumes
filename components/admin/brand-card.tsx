@@ -1,6 +1,5 @@
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -15,18 +14,20 @@ import {
   deleteBrand,
   upsertBrand,
 } from "@/server-functions/brands";
+import { uploadImage } from "@/server-functions/upload";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trash } from "lucide-react";
 import { useState } from "react";
 import { Column } from "../layout/column";
-import { Row } from "../layout/row";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Trash } from "lucide-react";
+import ImageUploader from "../image-uploader";
 
 export default function BrandAdminCard({ brand }: { brand: GetBrandResponse }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
@@ -52,10 +53,26 @@ export default function BrandAdminCard({ brand }: { brand: GetBrandResponse }) {
       setIsFormOpen(false);
     },
   });
-  const onSubmitLocal = () => {
+
+  const onSubmitLocal = async () => {
+    let finalUrl = form.imageUrl;
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await uploadImage({
+        formData,
+        folder: "marca",
+        customFilename: slugify(form.name),
+      });
+      if (response.success && response.url) {
+        finalUrl = response.url;
+        setFile(null);
+      }
+    }
     mutate({
       name: form.name,
-      imageUrl: form.imageUrl,
+      imageUrl: finalUrl,
       slug: slugify(form.name),
     });
   };
@@ -115,21 +132,11 @@ export default function BrandAdminCard({ brand }: { brand: GetBrandResponse }) {
           </div>
           <div className="w-full">
             <Label>Imagem da Marca</Label>
-            <Input
-              type="text"
-              placeholder="Digite o link da imagem"
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              value={form?.imageUrl || ""}
+            <ImageUploader
+              setFile={setFile}
+              preview={form?.imageUrl || ""}
+              setPreview={(preview) => setForm({ ...form, imageUrl: preview })}
             />
-            {form?.imageUrl && (
-              <div className="w-24 h-24 rounded-lg overflow-hidden border border-border mt-2">
-                <img
-                  src={form.imageUrl}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
           </div>
 
           <Column className="md:flex-row border-t py-4 mt-4">

@@ -31,6 +31,8 @@ import { SelectContent } from "../ui/select";
 import BrandForm from "./create-brand-form";
 import CurrencyInput from "react-currency-input-field";
 import { Switch } from "../ui/switch";
+import ImageUploader from "../image-uploader";
+import { uploadImage } from "@/server-functions/upload";
 
 interface GenderLabel {
   [key: string]: string;
@@ -52,6 +54,7 @@ export default function ProductAdminCard({
   const queryClient = useQueryClient();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState<UpsertProductRequest>({
     name: "",
     priceInCents: 0,
@@ -106,14 +109,40 @@ export default function ProductAdminCard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["admin_products"] });
+      setForm({
+        name: "",
+        priceInCents: 0,
+        slug: "",
+        gender: "Masculino",
+        imageUrl: "",
+        categoryId: 0,
+        brandId: 0,
+        stock: 1,
+        fragranticaUrl: "",
+      });
       setIsDeleteOpen(false);
       setIsFormOpen(false);
     },
   });
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutate({ product: form, id: product.id });
+    let finalUrl = form.imageUrl;
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await uploadImage({
+        formData,
+        folder: "produto",
+        customFilename: form.slug,
+      });
+      if (response.success && response.url) {
+        finalUrl = response.url;
+        setFile(null);
+      }
+    }
+    mutate({ product: { ...form, imageUrl: finalUrl }, id: product.id });
   };
 
   return (
@@ -316,10 +345,10 @@ export default function ProductAdminCard({
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>URL da Imagem</Label>
-            <Input
-              value={form?.imageUrl || ""}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              placeholder="https://..."
+            <ImageUploader
+              setFile={setFile}
+              preview={form?.imageUrl || ""}
+              setPreview={(preview) => setForm({ ...form, imageUrl: preview })}
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
@@ -333,16 +362,6 @@ export default function ProductAdminCard({
             />
           </div>
 
-          {/* Image preview */}
-          {form?.imageUrl && (
-            <div className="w-24 h-24 rounded-lg overflow-hidden border border-border">
-              <img
-                src={form.imageUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
           <Column className="md:flex-row">
             <Row className="items-center justify-center md:w-48 w-full">
               <Switch
