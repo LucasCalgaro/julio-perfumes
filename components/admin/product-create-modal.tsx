@@ -30,6 +30,7 @@ import {
 import BrandForm from "./create-brand-form";
 import CurrencyInput from "react-currency-input-field";
 import { Column } from "../layout/column";
+import PasteImageUploader from "../image-uploader";
 
 const GENDERS = ["Masculino", "Feminino", "Unisex"];
 
